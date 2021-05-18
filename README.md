@@ -15,3 +15,22 @@ This problem is similar to the above problem, although here, the readers may sta
 
 ### Third readers–writers problem
 This problem overcomes the downsides of the previous two problems of starvation. It is also known as the Starve-Free-Readers-Writers-Problem. It will give priority to the resources in the order of their arrival. For example, if a writer wants to write to the resource, it will wait until the current readers execute their tasks. Meanwhile, other readers accessing the resources would not be allowed to do so. Hence, the constraint is that no thread shall be allowed to starve.
+
+***
+
+## Explanation of the Code
+
+A total of three semaphores are used here:
+
+- **rMutex**: 
+This semaphore is used to update the readers' count. Hence, this is available only to readers method.
+- **getAccess**: 
+If the readers are reading and if the writer tries to access the critical section, it would get blocked and vice versa. Thus, this is either in control of the reader or the writer.  However, if one reader is reading and another reader tries to access it, there would not be any problem. This semaphore gets updated in three instances. Firstly, when the first reader arrives. Secondly, when the last reader leaves the critical section and lastly when any writer writes to the resource.
+- **turn**: 
+This semaphore is used at the start of the entry section of readers/writers code. This involves checking if there is any process already waiting for its turn, and if so, it gets blocked. If not, it accesses the semaphore, and no new reader or writer will now execute before this process. Thus, it helps in preserving the order of process.
+
+An integer variable is also used:
+
+- **readCount**: It is used to update the number of readers at a specific time.
+
+For the read method, firstly, wait for turn, and rMutex is called. Now, if any process is already in the queue, the calling process is blocked as the order would be one. Otherwise, it would make order equal to one. rMutex is used to check whether there is any other process updating the readers count. If the reader count is 0, then do not allow the writer to access the critical section. Once the reader count is updated, both the semaphores are released. After reading of resource, readCount is decremented by getting hold of rMutex, and if the reader count is 0, writers can now access the critical section. For the write method, we first check the turn semaphore, and then the writer gets access with the getAccess semaphore. Since the turn would be preserved, the turn semaphore can now be released. The writers then modify the resources, and finally, getAccess is released. Thus, our objective of preventing any process from starving is achieved successfully.
