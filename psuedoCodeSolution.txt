@@ -1,0 +1,49 @@
+// INTIALIZATION
+readCount = Integer(0);        // Integer readCount: the no. of reader executing critical section
+turn = Semaphore(1);           // Semaphore turn: the order in which the Reader and 
+                                  Writer are requesting access to critical section
+getAccess = Semaphore(1);      // Semaphore getAccess: required to access the critical section
+rMutex = Semaphore(1);         // Semaphore rMutex: required to modify the readCount variable
+
+
+// READER CODE FORMAT
+
+do{
+<ENTRY SECTION>
+       wait(turn);             // Waiting for the turn for execution
+       wait(rMutex);           // Requesting access so as to increment readCount
+       readCount++;            // increment the readCount by one
+       if(readCount==1)        // If current reader is the first reader(when readCount=1), request access to critical section
+         wait(getAccess);      // If above conditional is satisfied, request  access to the critical section for readers
+       signal(turn);           // Releasing turn so that the next Reader/Writer can take the token
+                                  and can be serviced
+       signal(r_mutex);        // Access to the readCount is released
+<CRITICAL SECTION>
+       
+<EXIT SECTION>
+       wait(rMutex)            // Requesting access so as to modify readCount         
+       readCount--;            // readCount decrements by one when a reader has finished executing critical section
+       if(readCount==0)        // Conditional to check if all the readers have finished executing their critical section
+        signal(getAccess);     // Releasing access to critical section for next Reader/Writer
+       signal(rMutex);         // Access to the readCount is released
+       
+<REMAINDER SECTION>
+       
+}while(true);
+
+
+// WRITER CODE FORMAT
+do{
+<ENTRY SECTION>
+      wait(turn);              // Waiting for the turn for execution
+      wait(getAccess);         // Requesting access to the critical section
+      signal(turn);            // Releasing the turn so so that the next Reader/Writer can take the token
+                                  and can be serviced
+<CRITICAL SECTION>
+
+<EXIT SECTION>
+      signal(getAccess)        // Releasing access to critical section for next Reader/Writer
+
+<REMAINDER SECTION>
+
+}while(true);
